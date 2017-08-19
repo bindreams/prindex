@@ -15,15 +15,20 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pretty_index.hpp">
+    <ClInclude Include="include\pretty_index.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tests.hpp">
+    <ClInclude Include="include\tests.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <None Include="README.md">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
