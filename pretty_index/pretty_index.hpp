@@ -77,10 +77,8 @@ SOFTWARE.
 
 #include <cstdlib> // std::realloc, std::free
 #include <cstring> // strlen, strstr, strchr, std::memmove, strncpy_s
-#include <string> // std::string
 #include <typeinfo> // std::type_info
 #include <typeindex> // std::type_index
-#include <iostream>
 
 #include <ciso646>
 #ifdef _LIBCPP_VERSION
@@ -182,7 +180,7 @@ char* str_rep(char*& str, const char* original, const char* updated) {
 #pragma warning(default:4996)
 #endif
 
-std::string demangle(const char* name) {
+char* demangle(const char* name) {
 	#if defined (_CPPLIB_VER)
 
 	//Normal version
@@ -270,9 +268,7 @@ std::string demangle(const char* name) {
 
 	#endif // PRETTY_INDEX_GROUP_ANGLE_BRACKETS == 1
 
-	std::string rslt(str);
-	std::free(str);
-	return rslt;
+	return str;
 }
 
 /*!
@@ -329,7 +325,7 @@ unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int seed) {
 
 class pretty_index {
 private:
-	std::string data;
+	char* data;
 
 public:
 	const char* name() const;
@@ -348,39 +344,39 @@ public:
 	pretty_index() = delete; // Default constructor (deleted)
 	pretty_index(const pretty_index& other) = default; // Copy constructor
 	pretty_index(pretty_index&& other) = default; // Move constructor
-	~pretty_index() = default; // Default destructor
+	~pretty_index(); // Default destructor
 };
 
-inline const  char* pretty_index::name() const {
-	return data.c_str();
+inline const char* pretty_index::name() const {
+	return data;
 }
 
 inline std::size_t pretty_index::hash_code() const {
-	return details::MurmurHashNeutral2(data.c_str(), static_cast<int>(data.length()), 0);
+	return details::MurmurHashNeutral2(data, static_cast<int>(strlen(data)), 0);
 }
 
 inline bool pretty_index::operator==(const pretty_index & rhs) const {
-	return data == rhs.data;
+	return strcmp(data, rhs.data) == 0;
 }
 
 inline bool pretty_index::operator!=(const pretty_index & rhs) const {
-	return data != rhs.data;
+	return !operator==(rhs);
 }
 
 inline bool pretty_index::operator<(const pretty_index & rhs) const {
-	return data < rhs.data;
+	return strcmp(data, rhs.data) < 0;
 }
 
 inline bool pretty_index::operator<=(const pretty_index & rhs) const {
-	return data <= rhs.data;
+	return !rhs.operator<(*this);
 }
 
 inline bool pretty_index::operator>(const pretty_index & rhs) const {
-	return data > rhs.data;
+	return rhs.operator<(*this);
 }
 
 inline bool pretty_index::operator>=(const pretty_index & rhs) const {
-	return data >= rhs.data;
+	return !operator<(rhs);
 }
 
 inline pretty_index::pretty_index(const std::type_info & info) :
@@ -390,6 +386,10 @@ inline pretty_index::pretty_index(const std::type_info & info) :
 inline pretty_index::pretty_index(const std::type_index & info) :
 	data(details::demangle(info.name()))
 {}
+
+inline pretty_index::~pretty_index() {
+	std::free(data);
+}
 
 } // namespace zhukov
 
