@@ -19,7 +19,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-//Now hosted on github!!!
 
 #ifndef PRETTY_INDEX_HPP
 #define PRETTY_INDEX_HPP
@@ -28,14 +27,14 @@ SOFTWARE.
 //IMPORTANT MACROS =============================================================
 
 /*!
-\brief   If set to 1, removes spaces between angle brackets '''<>'''
+\brief   If set to 1, removes spaces between angle brackets ```<>```
 \details Example of what this macro does:\n
-         If macro **is** set to 1, '''prettyid(std::string).name()''' returns
-		 '''std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char>>'''
-		 If macro **is not** set to 1, '''prettyid(std::string).name()'''
-		 returns '''std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >'''
+         If macro **is** set to 1, ```prettyid(std::string).name()``` returns
+		 ```std::basic_string<char, std::char_traits<char>, 
+		 std::allocator<char>>```
+		 If macro **is not** set to 1, ```prettyid(std::string).name()```
+		 returns ```std::basic_string<char, std::char_traits<char>, 
+		 std::allocator<char> >```
 \see     pretty_index::name
 */
 #define PRETTY_INDEX_GROUP_ANGLE_BRACKETS 1
@@ -43,12 +42,12 @@ SOFTWARE.
 /*!
 \brief   If set to 1, cuts non-standard inline namespaces in llvm
 \details Example of what this macro does:\n 
-         If macro **is** set to 1, '''prettyid(std::string).name()''' returns
-		 '''std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >'''
-		 If macro **is not** set to 1, '''prettyid(std::string).name()''' 
-		 returns '''std::__1::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >'''
+         If macro **is** set to 1, ```prettyid(std::string).name()``` returns
+		 ```std::basic_string<char, std::char_traits<char>, 
+		 std::allocator<char> >```
+		 If macro **is not** set to 1, ```prettyid(std::string).name()``` 
+		 returns ```std::__1::basic_string<char, std::char_traits<char>, 
+		 std::allocator<char> >```
 \see     pretty_index::name
 */
 #define PRETTY_INDEX_LIBCPP_CUT_INLINE_NAMESPACES 1
@@ -56,11 +55,11 @@ SOFTWARE.
 /*!
 \brief   If set to 1, unwraps typedef classes to their original types in gcc
 \details Example of what this macro does:\n
-         If macro **is** set to 1, '''prettyid(std::string).name()''' returns
-         '''std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >'''
-         If macro **is not** set to 1, '''prettyid(std::string).name()'''
-         returns '''std::string'''
+         If macro **is** set to 1, ```prettyid(std::string).name()``` returns
+         ```std::basic_string<char, std::char_traits<char>, 
+		 std::allocator<char> >```
+         If macro **is not** set to 1, ```prettyid(std::string).name()```
+         returns ```std::string```
 \see     pretty_index::name
 */
 #define PRETTY_INDEX_LIBSTDCPP_UNWRAP_TYPEDEFS 1
@@ -77,7 +76,7 @@ SOFTWARE.
 //==============================================================================
 
 #include <cstdlib> // std::realloc, std::free
-#include <cstring> // strlen, strstr, strchr, std::memmove, strncpy_s
+#include <cstring> // strlen, strstr, strchr, memmove, strcpy, strncpy
 #include <typeinfo> // std::type_info
 #include <typeindex> // std::type_index
 
@@ -91,7 +90,7 @@ SOFTWARE.
 #elif _CPPLIB_VER // Note: used by Visual Studio
 //	Using Dinkumware STL
 #else
-#	error pretty_index: unsupported standerd library detected. Supported libraries are: LLVM libc++, GNU libstdc++, Dinkumware STL
+#	error pretty_index: unsupported standard library detected. Supported libraries are: LLVM libc++, GNU libstdc++, Dinkumware STL
 #endif
 
 ///Namespace for all functions and classes, to not pollute global namespace
@@ -117,7 +116,7 @@ char * str_cut(char*& str, const char* string_to_cut) {
 	return str;
 }
 
-//Disable C4996 for strspy, strncpy
+//Disable C4996 for strcpy, strncpy
 #if defined (_MSC_VER)
 #pragma warning(disable:4996)
 #endif
@@ -176,7 +175,7 @@ char* str_rep(char*& str, const char* original, const char* updated) {
 
 }
 
-//Disable C4996 for strncpy
+//un-Disable C4996 for strcpy, strncpy
 #if defined (_MSC_VER)
 #pragma warning(default:4996)
 #endif
@@ -276,7 +275,7 @@ char* demangle(const char* name) {
 \brief   MurmurHashNeutral2, by Austin Appleby
 \details Produces a hash of a byte array. Same as MurmurHash2, but endian- and alignment-neutral.
          Site: https://sites.google.com/site/murmurhash/
-\param   key Poointer to an array of bytes
+\param   key Pointer to an array of bytes
 \param   len Length of the array
 \param   seed Seed for hashing algorithm
 \see     pretty_index::hash_code
