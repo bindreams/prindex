@@ -99,12 +99,12 @@ namespace zhukov {
 ///Namespace for internal-use-only functions
 namespace details {
 
-char * str_shrink_to_fit(char*& str) {
+inline char * str_shrink_to_fit(char*& str) {
 	str = static_cast<char*>(realloc(str, strlen(str) + 1));
 	return str;
 }
 
-char * str_cut(char*& str, const char* string_to_cut) {
+inline char * str_cut(char*& str, const char* string_to_cut) {
 	std::size_t string_to_cut_len = strlen(string_to_cut);
 
 	char* it;
@@ -121,14 +121,14 @@ char * str_cut(char*& str, const char* string_to_cut) {
 #pragma warning(disable:4996)
 #endif
 
-char * str_dup(const char * str) {
+inline char * str_dup(const char * str) {
 	std::size_t len = 1 + strlen(str);
 	char* p = static_cast<char*>(malloc(len));
 
 	return p ? static_cast<char*>(memcpy(p, str, len)) : nullptr;
 }
 
-char* str_rep(char*& str, const char* original, const char* updated) {
+inline char* str_rep(char*& str, const char* original, const char* updated) {
 	std::size_t original_len = strlen(original);
 	std::size_t updated_len = strlen(updated);
 
@@ -180,7 +180,7 @@ char* str_rep(char*& str, const char* original, const char* updated) {
 #pragma warning(default:4996)
 #endif
 
-char* demangle(const char* name) {
+inline char* demangle(const char* name) {
 	#if defined (_CPPLIB_VER)
 
 	//Normal version
@@ -280,7 +280,7 @@ Site: https://sites.google.com/site/murmurhash/
 \param   seed Seed for hashing algorithm
 \see     pretty_index::hash_code
 */
-unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int seed) {
+inline unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int seed) {
 	const unsigned int m = 0x5bd1e995;
 	const int r = 24;
 
