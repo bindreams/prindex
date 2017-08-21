@@ -27,27 +27,14 @@ SOFTWARE.
 //IMPORTANT MACROS =============================================================
 
 /*!
-\brief   If set to 1, removes spaces between angle brackets ```<>```
-\details Example of what this macro does:\n
-         If macro **is** set to 1, ```prettyid(std::string).name()``` returns
-		 ```std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char>>```
-		 If macro **is not** set to 1, ```prettyid(std::string).name()```
-		 returns ```std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >```
-\see     pretty_index::name
-*/
-#define PRETTY_INDEX_GROUP_ANGLE_BRACKETS 1
-
-/*!
 \brief   If set to 1, cuts non-standard inline namespaces in llvm
-\details Example of what this macro does:\n 
-         If macro **is** set to 1, ```prettyid(std::string).name()``` returns
-		 ```std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >```
-		 If macro **is not** set to 1, ```prettyid(std::string).name()``` 
-		 returns ```std::__1::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >```
+\details Example of what this macro does:\n
+If macro **is** set to 1, ```prettyid(std::string).name()``` returns
+```std::basic_string<char, std::char_traits<char>,
+std::allocator<char> >```
+If macro **is not** set to 1, ```prettyid(std::string).name()```
+returns ```std::__1::basic_string<char, std::char_traits<char>,
+std::allocator<char> >```
 \see     pretty_index::name
 */
 #define PRETTY_INDEX_LIBCPP_CUT_INLINE_NAMESPACES 1
@@ -55,20 +42,33 @@ SOFTWARE.
 /*!
 \brief   If set to 1, unwraps typedef classes to their original types in gcc
 \details Example of what this macro does:\n
-         If macro **is** set to 1, ```prettyid(std::string).name()``` returns
-         ```std::basic_string<char, std::char_traits<char>, 
-		 std::allocator<char> >```
-         If macro **is not** set to 1, ```prettyid(std::string).name()```
-         returns ```std::string```
+If macro **is** set to 1, ```prettyid(std::string).name()``` returns
+```std::basic_string<char, std::char_traits<char>,
+std::allocator<char> >```
+If macro **is not** set to 1, ```prettyid(std::string).name()```
+returns ```std::string```
 \see     pretty_index::name
 */
 #define PRETTY_INDEX_LIBSTDCPP_UNWRAP_TYPEDEFS 1
 
 /*!
+\brief   If set to 1, removes spaces between angle brackets ```<>```
+\details Example of what this macro does:\n
+If macro **is** set to 1, ```prettyid(std::string).name()``` returns
+```std::basic_string<char, std::char_traits<char>,
+std::allocator<char>>```
+If macro **is not** set to 1, ```prettyid(std::string).name()```
+returns ```std::basic_string<char, std::char_traits<char>,
+std::allocator<char> >```
+\see     pretty_index::name
+*/
+#define PRETTY_INDEX_GROUP_ANGLE_BRACKETS 1
+
+/*!
 \brief   If set to 1, enables a macro called "prettyid", which behaves like
-         the typeid keyword
+the typeid keyword
 \details prettyid macro is using variadic macro arguments. If your compiler
-         does not support them, prettyid will not work with template classes.
+does not support them, prettyid will not work with template classes.
 \see     prettyid
 */
 #define PRETTY_INDEX_ENABLE_PRETTYID_MACRO 1
@@ -112,7 +112,7 @@ char * str_cut(char*& str, const char* string_to_cut) {
 		std::memmove(it, it + string_to_cut_len, strlen(it + string_to_cut_len) + 1);
 	}
 
-	str = static_cast<char*>(std::realloc(str, strlen(str)+1));
+	str = static_cast<char*>(std::realloc(str, strlen(str) + 1));
 	return str;
 }
 
@@ -131,16 +131,16 @@ char * str_dup(const char * str) {
 char* str_rep(char*& str, const char* original, const char* updated) {
 	std::size_t original_len = strlen(original);
 	std::size_t updated_len = strlen(updated);
-	
+
 	//How much memory is needed for the new std::string
 	std::size_t mem_needed = strlen(str) + 1;
 
 	//By how much does the array need to grow/shrink
 	int diff = updated_len - original_len;
-	
+
 	//Calculate required memory
 	for (char* it = strstr(str, original); it != nullptr; it = strstr(++it, original)) mem_needed += diff;
-	
+
 	char* it;
 	if (diff >= 0) {
 		//If std::string grows, reallocate memoty at the beginning
@@ -170,7 +170,7 @@ char* str_rep(char*& str, const char* original, const char* updated) {
 
 		str = static_cast<char*>(std::realloc(str, mem_needed));
 	}
-	
+
 	return str;
 
 }
@@ -189,7 +189,7 @@ char* demangle(const char* name) {
 	if (!str_cut(str, "struct ")) throw std::bad_cast();
 	if (!str_rep(str, " ,", ",")) throw std::bad_cast();
 	if (!str_rep(str, ",", ", ")) throw std::bad_cast();
-	
+
 	//Optimised-by-hand version
 	/*std::size_t mem_needed = strlen(name) + 1;
 	for (const char* it = strchr(name, ','); it != nullptr; it = strchr(++it, ',')) mem_needed++;
@@ -202,26 +202,26 @@ char* demangle(const char* name) {
 
 	//Length of "struct " = 6
 	while ((it = strstr(str, substr_1)) != nullptr) {
-		memmove(it, it + 6, strlen(it + 6) + 1);
+	memmove(it, it + 6, strlen(it + 6) + 1);
 	}
 
 	//Length of "struct " = 7
 	while ((it = strstr(str, substr_2)) != nullptr) {
-		memmove(it, it + 7, strlen(it + 7) + 1);
+	memmove(it, it + 7, strlen(it + 7) + 1);
 	}
-	
+
 	for (it = strchr(str, ','); it != nullptr; it = strchr(++it, ',')) {
-		if (*(it + 1) != ' ') {
-			memmove(it + 2, it + 1, strlen(it + 1) + 1);
-			*(it + 1) = ' ';
-		}
-		if (*(it - 1) == ' ') {
-			memmove(it - 1, it, strlen(it) + 1);
-		}
+	if (*(it + 1) != ' ') {
+	memmove(it + 2, it + 1, strlen(it + 1) + 1);
+	*(it + 1) = ' ';
+	}
+	if (*(it - 1) == ' ') {
+	memmove(it - 1, it, strlen(it) + 1);
+	}
 	}*/
 
 	#elif defined(_LIBCPP_VERSION)
-	
+
 	int status = 0;
 	const char* demangled_name = abi::__cxa_demangle(name, nullptr, nullptr, &status);
 	if (status != 0) {
@@ -240,7 +240,7 @@ char* demangle(const char* name) {
 	//Length of "std::__" = 7
 	//Double colons "::" begin at pos 3
 	while ((it = strstr(str, substr)) != nullptr) {
-		memmove(it + 3, strstr(it+7, colons), strlen(strstr(it + 7, colons)) + 1);
+		memmove(it + 3, strstr(it + 7, colons), strlen(strstr(it + 7, colons)) + 1);
 	}
 	str_shrink_to_fit(str);
 
@@ -259,7 +259,7 @@ char* demangle(const char* name) {
 	#if PRETTY_INDEX_LIBSTDCPP_UNWRAP_TYPEDEFS == 1
 	if (!str_rep(str, "std::string", "std::basic_std::string<char, std::char_traits<char>, std::allocator<char> >")) throw std::bad_cast();
 	#endif // PRETTY_INDEX_LIBSTDCPP_UNWRAP_TYPEDEFS == 1
-	
+
 	#endif
 
 	#if PRETTY_INDEX_GROUP_ANGLE_BRACKETS == 1
@@ -274,7 +274,7 @@ char* demangle(const char* name) {
 /*!
 \brief   MurmurHashNeutral2, by Austin Appleby
 \details Produces a hash of a byte array. Same as MurmurHash2, but endian- and alignment-neutral.
-         Site: https://sites.google.com/site/murmurhash/
+Site: https://sites.google.com/site/murmurhash/
 \param   key Pointer to an array of bytes
 \param   len Length of the array
 \param   seed Seed for hashing algorithm
@@ -308,10 +308,10 @@ unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int seed) {
 	}
 
 	switch (len) {
-	case 3: h ^= data[2] << 16;
-	case 2: h ^= data[1] << 8;
-	case 1: h ^= data[0];
-		h *= m;
+		case 3: h ^= data[2] << 16;
+		case 2: h ^= data[1] << 8;
+		case 1: h ^= data[0];
+			h *= m;
 	};
 
 	h ^= h >> 13;
@@ -342,8 +342,13 @@ public:
 	pretty_index(const std::type_index& info); // Construct from std::type_index
 
 	pretty_index() = delete; // Default constructor (deleted)
-	pretty_index(const pretty_index& other) = default; // Copy constructor
+
+	pretty_index(const pretty_index& other); // Copy constructor
 	pretty_index(pretty_index&& other) = default; // Move constructor
+
+	pretty_index& operator=(const pretty_index& rhs);
+	pretty_index& operator=(pretty_index&& rhs) = default;
+
 	~pretty_index(); // Default destructor
 };
 
@@ -380,12 +385,33 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 }
 
 inline pretty_index::pretty_index(const std::type_info & info) :
-	data (details::demangle(info.name()))
-{}
+	data(details::demangle(info.name())) {
+}
 
 inline pretty_index::pretty_index(const std::type_index & info) :
-	data(details::demangle(info.name()))
-{}
+	data(details::demangle(info.name())) {
+}
+
+//Disable C4996 for strcpy
+#if defined (_MSC_VER)
+#pragma warning(disable:4996)
+#endif
+
+inline pretty_index::pretty_index(const pretty_index & other) {
+	data = static_cast<char*>(realloc(data, strlen(other.data) + 1));
+	strcpy(data, other.data);
+}
+
+inline pretty_index & pretty_index::operator=(const pretty_index & rhs) {
+	data = static_cast<char*>(realloc(data, strlen(rhs.data) + 1));
+	strcpy(data, rhs.data);
+	return *this;
+}
+
+//un-Disable C4996 for strcpy
+#if defined (_MSC_VER)
+#pragma warning(default:4996)
+#endif
 
 inline pretty_index::~pretty_index() {
 	std::free(data);
@@ -403,7 +429,7 @@ template<> struct hash<zhukov::pretty_index> {
 
 } // namespace std
 
-//Note: your compiler must support variadic templates for this macro to work.
+  //Note: your compiler must support variadic templates for this macro to work.
 #if PRETTY_INDEX_ENABLE_PRETTYID_MACRO == 1
 #	define prettyid(...) zhukov::pretty_index(typeid(__VA_ARGS__))
 #endif // PRETTY_INDEX_ENABLE_PRETTYID_MACRO == 1

@@ -1,5 +1,11 @@
 #include "tests.hpp"
 
+using namespace zhukov;
+
 int main() {
-	test_all();
+	pretty_index t = prettyid(int);
+	auto t2 = t;
+	t2 = t;
+
+	//test_all();
 }

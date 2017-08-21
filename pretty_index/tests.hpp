@@ -7,8 +7,6 @@
 #include <map>
 #include <thread>
 
-using namespace std;
-using namespace std::chrono_literals;
 namespace ch = std::chrono;
 
 namespace nm {
@@ -29,8 +27,8 @@ void time_macro() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed prettyid(std::map<std::string, nm::A>)" << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed prettyid(std::map<std::string, nm::A>)" << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_ctor() {
@@ -46,8 +44,8 @@ void time_ctor() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed zhukov::pretty_index(typeid(std::map<std::string, nm::A>))" << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed zhukov::pretty_index(typeid(std::map<std::string, nm::A>))" << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_name() {
@@ -65,8 +63,8 @@ void time_name() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed zhukov::pretty_index::name()" << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed zhukov::pretty_index::name()" << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_hash() {
@@ -84,9 +82,9 @@ void time_hash() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed zhukov::pretty_index::hash_code()" << endl;
-	cout << "    " << x.hash_code() << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed zhukov::pretty_index::hash_code()" << std::endl;
+	std::cout << "    " << x.hash_code() << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_less() {
@@ -105,9 +103,9 @@ void time_less() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed zhukov::pretty_index::operator<()" << endl;
-	cout << "    " << (x < y) << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed zhukov::pretty_index::operator<()" << std::endl;
+	std::cout << "    " << (x < y) << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_typeid() {
@@ -123,9 +121,9 @@ void time_typeid() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed typeid(std::map<std::string, nm::A>)" << endl;
-	cout << "    " << typeid(std::map<std::string, nm::A>).name() << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed typeid(std::map<std::string, nm::A>)" << std::endl;
+	std::cout << "    " << typeid(std::map<std::string, nm::A>).name() << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_type_index() {
@@ -141,9 +139,9 @@ void time_type_index() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed std::type_index (typeid(std::map<std::string, nm::A>))" << endl;
-	cout << "    " << std::type_index(typeid(std::map<std::string, nm::A>)).name() << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed std::type_index (typeid(std::map<std::string, nm::A>))" << std::endl;
+	std::cout << "    " << std::type_index(typeid(std::map<std::string, nm::A>)).name() << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_type_index_name() {
@@ -161,14 +159,14 @@ void time_type_index_name() {
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	cout << "Timed std::type_index::name()" << endl;
-	cout << "    " << x.name() << endl;
-	cout << "    " << time << "ns" << endl << endl;
+	std::cout << "Timed std::type_index::name()" << std::endl;
+	std::cout << "    " << x.name() << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void test_all() {
-	cout << "prettyid(std::string).name() =" << endl << prettyid(std::string).name() << endl << endl;
-	cout << "prettyid(std::map<std::string, nm::A>).name() =" << endl << prettyid(std::map<std::string, nm::A>).name() << endl << endl;
+	std::cout << "prettyid(std::string).name() =" << std::endl << prettyid(std::string).name() << std::endl << std::endl;
+	std::cout << "prettyid(std::map<std::string, nm::A>).name() =" << std::endl << prettyid(std::map<std::string, nm::A>).name() << std::endl << std::endl;
 
 	time_macro();
 	time_ctor();
@@ -176,7 +174,7 @@ void test_all() {
 	time_hash();
 	time_less();
 
-	cout << "Measuring typeid" << endl << endl;
+	std::cout << "Measuring typeid" << std::endl << std::endl;
 
 	time_typeid();
 	time_type_index();
