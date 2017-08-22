@@ -10,46 +10,50 @@
 namespace ch = std::chrono;
 
 namespace nm {
-class A {};
-class B {};
+struct A {};
+struct B { virtual void foo() {}; };
+struct D : B {};
 }
 
-void time_macro() {
+void time_norm_ctor() {
 	std::size_t N = 1000000;
 	auto t1 = ch::steady_clock::now();
 	for (std::size_t i = 0; i < N; i++) {
 		////////////////////////////////////////////////////////////////////////////
 
-		prettyid(std::map<std::string, nm::A>);
+		zhukov::prettyid<nm::A>();
 
 		////////////////////////////////////////////////////////////////////////////
 	}
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	std::cout << "Timed prettyid(std::map<std::string, nm::A>)" << std::endl;
+	std::cout << "Timed prettyid<nm::A>()" << std::endl;
 	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
-void time_ctor() {
+void time_poly_ctor() {
+	nm::D x;
+	nm::B& ref = x;
+
 	std::size_t N = 1000000;
 	auto t1 = ch::steady_clock::now();
 	for (std::size_t i = 0; i < N; i++) {
 		////////////////////////////////////////////////////////////////////////////
 
-		zhukov::pretty_index(typeid(std::map<std::string, nm::A>));
+		zhukov::prettyid(ref);
 
 		////////////////////////////////////////////////////////////////////////////
 	}
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	std::cout << "Timed zhukov::pretty_index(typeid(std::map<std::string, nm::A>))" << std::endl;
+	std::cout << "Timed zhukov::prettyid(ref)" << std::endl;
 	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
 void time_name() {
-	auto x = prettyid(std::map<std::string, nm::A>);
+	auto x = zhukov::prettyid<std::map<std::string, nm::A>>();
 
 	std::size_t N = 1000000;
 	auto t1 = ch::steady_clock::now();
@@ -68,7 +72,7 @@ void time_name() {
 }
 
 void time_hash() {
-	auto x = prettyid(std::map<std::string, nm::A>);
+	auto x = zhukov::prettyid<std::map<std::string, nm::A>>();
 
 	std::size_t N = 1000000;
 	auto t1 = ch::steady_clock::now();
@@ -88,8 +92,8 @@ void time_hash() {
 }
 
 void time_less() {
-	auto x = prettyid(std::map<std::string, nm::A>);
-	auto y = prettyid(std::map<std::string, nm::B>);
+	auto x = zhukov::prettyid<std::map<std::string, nm::A>>();
+	auto y = zhukov::prettyid<std::map<std::string, nm::B>>();
 
 	std::size_t N = 1000000;
 	auto t1 = ch::steady_clock::now();
@@ -108,21 +112,42 @@ void time_less() {
 	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
-void time_typeid() {
+void time_norm_typeid() {
 	std::size_t N = 1000000;
 	auto t1 = ch::steady_clock::now();
 	for (std::size_t i = 0; i < N; i++) {
 		////////////////////////////////////////////////////////////////////////////
 
-		typeid(std::map<std::string, nm::A>);
+		typeid(nm::A);
 
 		////////////////////////////////////////////////////////////////////////////
 	}
 	auto t2 = ch::steady_clock::now();
 	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
 
-	std::cout << "Timed typeid(std::map<std::string, nm::A>)" << std::endl;
-	std::cout << "    " << typeid(std::map<std::string, nm::A>).name() << std::endl;
+	std::cout << "Timed typeid(nm::A)" << std::endl;
+	std::cout << "    " << typeid(nm::A).name() << std::endl;
+	std::cout << "    " << time << "ns" << std::endl << std::endl;
+}
+
+void time_poly_typeid() {
+	nm::D x;
+	nm::B& ref = x;
+
+	std::size_t N = 1000000;
+	auto t1 = ch::steady_clock::now();
+	for (std::size_t i = 0; i < N; i++) {
+		////////////////////////////////////////////////////////////////////////////
+
+		typeid(ref);
+
+		////////////////////////////////////////////////////////////////////////////
+	}
+	auto t2 = ch::steady_clock::now();
+	auto time = ch::duration_cast<ch::nanoseconds>(t2 - t1).count() / N;
+
+	std::cout << "Timed typeid(ptr)" << std::endl;
+	std::cout << "    " << typeid(ref).name() << std::endl;
 	std::cout << "    " << time << "ns" << std::endl << std::endl;
 }
 
@@ -165,18 +190,19 @@ void time_type_index_name() {
 }
 
 void test_all() {
-	std::cout << "prettyid(std::string).name() =" << std::endl << prettyid(std::string).name() << std::endl << std::endl;
-	std::cout << "prettyid(std::map<std::string, nm::A>).name() =" << std::endl << prettyid(std::map<std::string, nm::A>).name() << std::endl << std::endl;
+	std::cout << "prettyid(std::string).name() =" << std::endl << zhukov::prettyid<std::string>().name() << std::endl << std::endl;
+	std::cout << "prettyid(std::map<std::string, nm::A>).name() =" << std::endl << zhukov::prettyid<std::map<std::string, nm::A>>().name() << std::endl << std::endl;
 
-	time_macro();
-	time_ctor();
+	time_norm_ctor();
+	time_poly_ctor();
 	time_name();
 	time_hash();
 	time_less();
 
 	std::cout << "Measuring typeid" << std::endl << std::endl;
 
-	time_typeid();
+	time_norm_typeid();
+	time_poly_typeid();
 	time_type_index();
 	time_type_index_name();
 }

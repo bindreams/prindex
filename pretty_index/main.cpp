@@ -1,11 +1,10 @@
 #include "tests.hpp"
-
+#include <iostream>
+#include "pretty_index.hpp"
 using namespace zhukov;
 
 int main() {
-	pretty_index t = prettyid(int);
-	auto t2 = t;
-	t2 = t;
+	//std::cout << prettyid<std::string>().name() << std::endl;
 
-	//test_all();
+	test_all();
 }
