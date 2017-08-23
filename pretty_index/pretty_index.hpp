@@ -62,16 +62,7 @@ returns ```std::basic_string<char, std::char_traits<char>,
 std::allocator<char> >```
 \see     pretty_index::name
 */
-#define PRETTY_INDEX_GROUP_ANGLE_BRACKETS 1
-
-/*!
-\brief   If set to 1, enables a macro called "prettyid", which behaves like
-the typeid keyword
-\details prettyid macro is using variadic macro arguments. If your compiler
-does not support them, prettyid will not work with template classes.
-\see     prettyid
-*/
-#define PRETTY_INDEX_ENABLE_PRETTYID_MACRO 1
+#define PRETTY_INDEX_GROUP_ANGLE_BRACKETS 0
 
 //==============================================================================
 
@@ -113,7 +104,8 @@ inline char * str_cut(char*& str, const char* string_to_cut) {
 		std::memmove(it, it + string_to_cut_len, strlen(it + string_to_cut_len) + 1);
 	}
 
-	str = static_cast<char*>(std::realloc(str, strlen(str) + 1));
+	///Shrinking moved to demangle for optimisation purposes
+	//str = static_cast<char*>(std::realloc(str, strlen(str) + 1));
 	return str;
 }
 
@@ -137,10 +129,11 @@ inline char* str_rep(char*& str, const char* original, const char* updated) {
 	std::size_t mem_needed = strlen(str) + 1;
 
 	//By how much does the array need to grow/shrink
-	long long int diff = updated_len - original_len;
+	auto diff = static_cast<long int>(updated_len - original_len);
 
 	//Calculate required memory
-	for (char* it = strstr(str, original); it != nullptr; it = strstr(++it, original)) mem_needed += diff;
+	for (char* it = strstr(str, original); it != nullptr; it = strstr(++it, original)) 
+		mem_needed += diff;
 
 	char* it;
 	if (diff >= 0) {
@@ -168,8 +161,8 @@ inline char* str_rep(char*& str, const char* original, const char* updated) {
 
 			it += updated_len;
 		}
-
-		str = static_cast<char*>(std::realloc(str, mem_needed));
+		///Shrinking moved to demangle for optimisation purposes
+		//str = static_cast<char*>(std::realloc(str, mem_needed));
 	}
 
 	return str;
@@ -185,16 +178,23 @@ inline char* demangle(const char* name) {
 	#if defined (_CPPLIB_VER)
 
 	//Normal version
-	char* str = str_dup(name);
-	if (!str_cut(str, "class ")) throw std::bad_cast();
-	if (!str_cut(str, "struct ")) throw std::bad_cast();
-	if (!str_rep(str, " ,", ",")) throw std::bad_cast();
-	if (!str_rep(str, ",", ", ")) throw std::bad_cast();
+	//char* str = str_dup(name);
+	//if (!str_cut(str, "class ")) throw std::bad_alloc();
+	//if (!str_cut(str, "struct ")) throw std::bad_alloc();
+	//if (!str_rep(str, " ,", ",")) throw std::bad_alloc();
+	//if (!str_rep(str, ",", ", ")) throw std::bad_alloc();
 
 	//Optimised-by-hand version
-	/*std::size_t mem_needed = strlen(name) + 1;
+	std::size_t mem_needed = strlen(name) + 1;
+
+	//Count all commas, as every comma might miss a space after
 	for (const char* it = strchr(name, ','); it != nullptr; it = strchr(++it, ',')) mem_needed++;
+
+	//Allocate
 	char* str = (char*)std::malloc(mem_needed);
+	if (!str) throw std::bad_alloc();
+
+	//Copy const char* name to char* str for corrections
 	std::memcpy(str, name, mem_needed);
 
 	const char substr_1[] = "class ";
@@ -203,34 +203,32 @@ inline char* demangle(const char* name) {
 
 	//Length of "struct " = 6
 	while ((it = strstr(str, substr_1)) != nullptr) {
-	memmove(it, it + 6, strlen(it + 6) + 1);
+		memmove(it, it + 6, strlen(it + 6) + 1);
 	}
 
 	//Length of "struct " = 7
 	while ((it = strstr(str, substr_2)) != nullptr) {
-	memmove(it, it + 7, strlen(it + 7) + 1);
+		memmove(it, it + 7, strlen(it + 7) + 1);
 	}
 
 	for (it = strchr(str, ','); it != nullptr; it = strchr(++it, ',')) {
-	if (*(it + 1) != ' ') {
-	memmove(it + 2, it + 1, strlen(it + 1) + 1);
-	*(it + 1) = ' ';
+		if (*(it + 1) != ' ') {
+			memmove(it + 2, it + 1, strlen(it + 1) + 1);
+			*(it + 1) = ' ';
+		}
+		if (*(it - 1) == ' ') {
+			memmove(it - 1, it, strlen(it) + 1);
+		}
 	}
-	if (*(it - 1) == ' ') {
-	memmove(it - 1, it, strlen(it) + 1);
-	}
-	}*/
 
 	#elif defined(_LIBCPP_VERSION)
 
 	int status = 0;
-	const char* demangled_name = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+	char* str = abi::__cxa_demangle(name, nullptr, nullptr, &status);
 	if (status != 0) {
-		std::free(const_cast<char*>(demangled_name));
-		throw std::runtime_error((std::string(name) + " - demangling failed").c_str());
+		std::free(str);
+		throw std::runtime_error("abi::__cxa_demangle failed");
 	}
-	char* str = str_dup(demangled_name);
-	std::free(const_cast<char*>(demangled_name));
 
 	#if PRETTY_INDEX_LIBCPP_CUT_INLINE_NAMESPACES == 1
 
@@ -243,32 +241,36 @@ inline char* demangle(const char* name) {
 	while ((it = strstr(str, substr)) != nullptr) {
 		memmove(it + 3, strstr(it + 7, colons), strlen(strstr(it + 7, colons)) + 1);
 	}
-	str_shrink_to_fit(str);
 
 	#endif // PRETTY_INDEX_LIBCPP_CUT_INLINE_NAMESPACES == 1
 	#elif defined (__GLIBCXX__)
 
 	int status = 0;
-	const char* demangled_name = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+	char* str = abi::__cxa_demangle(name, nullptr, nullptr, &status);
 	if (status != 0) {
-		std::free(const_cast<char*>(demangled_name));
-		throw std::runtime_error((std::string(name) + " - demangling failed").c_str());
+		std::free(str);
+		throw std::runtime_error("abi::__cxa_demangle failed");
 	}
-	char* str = str_dup(demangled_name);
-	std::free(const_cast<char*>(demangled_name));
 
 	#if PRETTY_INDEX_LIBSTDCPP_UNWRAP_TYPEDEFS == 1
-	if (!str_rep(str, "std::string", "std::basic_std::string<char, std::char_traits<char>, std::allocator<char> >")) throw std::bad_cast();
+	if (!str_rep(str, "std::string", "std::basic_std::string<char, std::char_traits<char>, std::allocator<char> >")) throw std::bad_alloc();
 	#endif // PRETTY_INDEX_LIBSTDCPP_UNWRAP_TYPEDEFS == 1
 
 	#endif
 
 	#if PRETTY_INDEX_GROUP_ANGLE_BRACKETS == 1
 
-	if (!str_rep(str, " >", ">")) throw std::bad_cast();
+	if (!str_rep(str, " >", ">")) throw std::bad_alloc();
+
+	/*for (char* it = strchr(str, '>'); it != nullptr; it = strchr(++it, '>')) {
+		if (*(it - 1) == ' ') {
+			memmove(it - 1, it, strlen(it) + 1);
+		}
+	}*/
 
 	#endif // PRETTY_INDEX_GROUP_ANGLE_BRACKETS == 1
 
+	str_shrink_to_fit(str);
 	return str;
 }
 
@@ -481,10 +483,5 @@ template<> struct hash<zhukov::pretty_index> {
 };
 
 } // namespace std
-
-  //Note: your compiler must support variadic templates for this macro to work.
-/*#if PRETTY_INDEX_ENABLE_PRETTYID_MACRO == 1
-#	define prettyid(...) zhukov::pretty_index(typeid(__VA_ARGS__))
-#endif // PRETTY_INDEX_ENABLE_PRETTYID_MACRO == 1*/
 
 #endif // PRETTY_INDEX_HPP
