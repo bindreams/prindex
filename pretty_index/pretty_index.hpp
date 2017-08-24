@@ -343,15 +343,12 @@ private:
 	const char* name_;
 
 	///Tells destructor if name_ needs freeing.
-	bool is_static;
+	bool needs_freeing_;
 
 	std::size_t hash_code_;
 
-	///Construct from raw data (used for polymorphic types)
-	pretty_index(const char* const& name, const std::size_t& hash_code);
-
-	template <typename T>
-	pretty_index(const details::static_info<T>& info);
+	///Construct from raw data
+	pretty_index(const char* const& name, const std::size_t& hash_code, bool needs_freeing);
 
 public:
 	const char* name() const;
@@ -414,23 +411,16 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 	return !operator<(rhs);
 }
 
-inline pretty_index::pretty_index(const char* const& name, const std::size_t& hash_code) :
+inline pretty_index::pretty_index(const char* const& name, const std::size_t& hash_code, bool needs_freeing) :
 	name_(name),
 	hash_code_(hash_code),
-	is_static(false)
+	needs_freeing_(needs_freeing)
 {}
 
-template<typename T>
-inline pretty_index::pretty_index(const details::static_info<T>& info) :
-	name_(info.name),
-	hash_code_(info.hash_code),
-	is_static(true) {
-}
-
 inline pretty_index::pretty_index(const pretty_index & other) :
-	name_(other.is_static ? other.name_ : details::str_dup(other.name_)),
+	name_(other.needs_freeing_ ? details::str_dup(other.name_) : other.name_),
 	hash_code_(other.hash_code_),
-	is_static(other.is_static) {
+	needs_freeing_(other.needs_freeing_) {
 }
 
 inline pretty_index & pretty_index::operator=(pretty_index rhs) {
@@ -439,12 +429,12 @@ inline pretty_index & pretty_index::operator=(pretty_index rhs) {
 }
 
 inline pretty_index::~pretty_index() {
-	if (!is_static) {
+	if (needs_freeing_) {
 		std::free(const_cast<char*>(name_));
 	}
 }
 
-void swap(pretty_index& first, pretty_index& second) {
+inline void swap(pretty_index& first, pretty_index& second) {
 	// enable ADL
 	using std::swap;
 
@@ -452,19 +442,19 @@ void swap(pretty_index& first, pretty_index& second) {
 	// the two objects are effectively swapped
 	swap(first.name_, second.name_);
 	swap(first.hash_code_, second.hash_code_);
-	swap(first.is_static, second.is_static);
+	swap(first.needs_freeing_, second.needs_freeing_);
 }
 
 template <typename T>
 inline pretty_index prettyid() {
-	return pretty_index(details::static_info<T>());
+	return pretty_index(details::static_info<T>::name, details::static_info<T>::hash_code, false);
 }
 
 template <typename T>
 inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
 	char* temp = details::demangle(typeid(obj).name());
 	return pretty_index(temp,
-		details::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0));
+		details::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0), true);
 }
 
 template <typename T>
