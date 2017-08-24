@@ -71,7 +71,8 @@ std::allocator<char> >```
 #include <typeinfo> // std::type_info
 #include <typeindex> // std::type_index
 #include <type_traits> // std::is_polymorphic
-#include <set>
+#include <map>
+#include <unordered_map>
 
 #include <ciso646>
 #ifdef _LIBCPP_VERSION
@@ -325,51 +326,41 @@ inline unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int s
 	return h;
 }
 
-template <typename T>
-class static_info {
-public:
-	static const char* name;
-	static const std::size_t hash_code;
-};
-template <typename T>
-const char* static_info<T>::name = demangle(typeid(T).name());
-template <typename T>
-const std::size_t static_info<T>::hash_code = MurmurHashNeutral2(static_info<T>::name, static_cast<int>(strlen(static_info<T>::name)), 0);
-
-struct charptr_less {
-	bool operator()(char const *a, char const *b) {
-		return std::strcmp(a, b) < 0;
-	}
-};
-
-struct pretty_type_data {
-public:
-	const char* raw_name;
+struct type_data {
 	const char* name;
 	const std::size_t hash_code;
 
-	pretty_type_data(const char* typeid_name) :
-		raw_name(typeid_name),
-		name (demangle(raw_name)),
+	type_data(const char* typeid_name) :
+		name (demangle(typeid_name)),
 		hash_code (MurmurHashNeutral2(name, static_cast<int>(strlen(name)), 0))
 	{}
 	
-	~pretty_type_data() {
+	~type_data() {
 		std::free(const_cast<char*>(name));
 	}
 };
 
-bool operator<(const pretty_type_data& lhs, const pretty_type_data& rhs) {
-	return std::strcmp(lhs.name, rhs.name) < 0;
-}
+struct charptr_less {
+	bool operator() (const char* const& lhs, const char* const& rhs) const {
+		return std::strcmp(lhs, rhs) < 0;
+	}
+};
 
-std::set<pretty_type_data> data_set;
+struct charptr_hash {
+	std::size_t operator() (const char* const& val) const {
+		return MurmurHashNeutral2(val, static_cast<int>(strlen(val)), 0);
+	}
+};
+
+using data_container = std::unordered_map<const char*, type_data, charptr_hash>;
+
+data_container data_set;
 
 } // namespace details
 
 class pretty_index {
 private:
-	std::set<details::pretty_type_data>::const_iterator data;
+	details::data_container::const_iterator data;
 
 public:
 	const char* name() const;
@@ -388,15 +379,15 @@ public:
 };
 
 inline const char* pretty_index::name() const {
-	return data->name;
+	return data->second.name;
 }
 
 inline const std::size_t pretty_index::hash_code() const {
-	return data->hash_code;
+	return data->second.hash_code;
 }
 
 inline bool pretty_index::operator==(const pretty_index & rhs) const {
-	return strcmp(data->name, rhs.data->name) == 0;
+	return strcmp(data->second.name, rhs.data->second.name) == 0;
 }
 
 inline bool pretty_index::operator!=(const pretty_index & rhs) const {
@@ -404,7 +395,7 @@ inline bool pretty_index::operator!=(const pretty_index & rhs) const {
 }
 
 inline bool pretty_index::operator<(const pretty_index & rhs) const {
-	return strcmp(data->name, rhs.data->name) < 0;
+	return strcmp(data->second.name, rhs.data->second.name) < 0;
 }
 
 inline bool pretty_index::operator<=(const pretty_index & rhs) const {
@@ -419,9 +410,14 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 	return !operator<(rhs);
 }
 
-inline pretty_index::pretty_index(const std::type_info & info) :
-	data (details::data_set.emplace(info.name()).first)
-{}
+inline pretty_index::pretty_index(const std::type_info & info) {
+	auto got = details::data_set.find(info.name());
+	
+	if (got == details::data_set.end())
+		got = details::data_set.emplace(info.name(), info.name()).first;
+
+	data = got;
+}
 
 } // namespace zhukov
 

@@ -206,7 +206,7 @@ void test_all() {
 	time_type_index();
 	time_type_index_name();
 
-	for (auto&& it : zhukov::details::data_set) {
+	/*for (auto&& it : zhukov::details::data_set) {
 		std::cout << it.name << std::endl;
-	}
+	}*/
 }
