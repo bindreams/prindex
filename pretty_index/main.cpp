@@ -4,7 +4,7 @@
 using namespace zhukov;
 
 int main() {
-	//std::cout << prettyid<std::string>().name() << std::endl;
+	//std::cout << prettyid(std::string).name() << std::endl;
 	
 	test_all();
 	//getchar();

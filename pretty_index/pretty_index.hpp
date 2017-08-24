@@ -71,6 +71,7 @@ std::allocator<char> >```
 #include <typeinfo> // std::type_info
 #include <typeindex> // std::type_index
 #include <type_traits> // std::is_polymorphic
+#include <set>
 
 #include <ciso646>
 #ifdef _LIBCPP_VERSION
@@ -335,20 +336,40 @@ const char* static_info<T>::name = demangle(typeid(T).name());
 template <typename T>
 const std::size_t static_info<T>::hash_code = MurmurHashNeutral2(static_info<T>::name, static_cast<int>(strlen(static_info<T>::name)), 0);
 
+struct charptr_less {
+	bool operator()(char const *a, char const *b) {
+		return std::strcmp(a, b) < 0;
+	}
+};
+
+struct pretty_type_data {
+public:
+	const char* raw_name;
+	const char* name;
+	const std::size_t hash_code;
+
+	pretty_type_data(const char* typeid_name) :
+		raw_name(typeid_name),
+		name (demangle(raw_name)),
+		hash_code (MurmurHashNeutral2(name, static_cast<int>(strlen(name)), 0))
+	{}
+	
+	~pretty_type_data() {
+		std::free(const_cast<char*>(name));
+	}
+};
+
+bool operator<(const pretty_type_data& lhs, const pretty_type_data& rhs) {
+	return std::strcmp(lhs.name, rhs.name) < 0;
+}
+
+std::set<pretty_type_data> data_set;
+
 } // namespace details
 
 class pretty_index {
 private:
-	///c-string containing name
-	const char* name_;
-
-	///Tells destructor if name_ needs freeing.
-	bool needs_freeing_;
-
-	std::size_t hash_code_;
-
-	///Construct from raw data
-	pretty_index(const char* const& name, const std::size_t& hash_code, bool needs_freeing);
+	std::set<details::pretty_type_data>::const_iterator data;
 
 public:
 	const char* name() const;
@@ -363,32 +384,19 @@ public:
 
 	pretty_index() = delete; // Default constructor (deleted)
 
-	pretty_index(const pretty_index& other); // Copy constructor
-	pretty_index(pretty_index&& other) = default; // Move constructor
-
-	pretty_index& operator=(pretty_index rhs);
-
-	~pretty_index(); // Default destructor
-
-	friend void swap(pretty_index& first, pretty_index& second);
-
-	template <typename T>
-	friend pretty_index prettyid();
-
-	template <typename T>
-	friend typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj);
+	pretty_index(const std::type_info& info);
 };
 
 inline const char* pretty_index::name() const {
-	return name_;
+	return data->name;
 }
 
 inline const std::size_t pretty_index::hash_code() const {
-	return hash_code_;
+	return data->hash_code;
 }
 
 inline bool pretty_index::operator==(const pretty_index & rhs) const {
-	return strcmp(name_, rhs.name_) == 0;
+	return strcmp(data->name, rhs.data->name) == 0;
 }
 
 inline bool pretty_index::operator!=(const pretty_index & rhs) const {
@@ -396,7 +404,7 @@ inline bool pretty_index::operator!=(const pretty_index & rhs) const {
 }
 
 inline bool pretty_index::operator<(const pretty_index & rhs) const {
-	return strcmp(name_, rhs.name_) < 0;
+	return strcmp(data->name, rhs.data->name) < 0;
 }
 
 inline bool pretty_index::operator<=(const pretty_index & rhs) const {
@@ -411,56 +419,9 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 	return !operator<(rhs);
 }
 
-inline pretty_index::pretty_index(const char* const& name, const std::size_t& hash_code, bool needs_freeing) :
-	name_(name),
-	hash_code_(hash_code),
-	needs_freeing_(needs_freeing)
+inline pretty_index::pretty_index(const std::type_info & info) :
+	data (details::data_set.emplace(info.name()).first)
 {}
-
-inline pretty_index::pretty_index(const pretty_index & other) :
-	name_(other.needs_freeing_ ? details::str_dup(other.name_) : other.name_),
-	hash_code_(other.hash_code_),
-	needs_freeing_(other.needs_freeing_) {
-}
-
-inline pretty_index & pretty_index::operator=(pretty_index rhs) {
-	swap(*this, rhs);
-	return *this;
-}
-
-inline pretty_index::~pretty_index() {
-	if (needs_freeing_) {
-		std::free(const_cast<char*>(name_));
-	}
-}
-
-inline void swap(pretty_index& first, pretty_index& second) {
-	// enable ADL
-	using std::swap;
-
-	// by swapping the members of two objects,
-	// the two objects are effectively swapped
-	swap(first.name_, second.name_);
-	swap(first.hash_code_, second.hash_code_);
-	swap(first.needs_freeing_, second.needs_freeing_);
-}
-
-template <typename T>
-inline pretty_index prettyid() {
-	return pretty_index(details::static_info<T>::name, details::static_info<T>::hash_code, false);
-}
-
-template <typename T>
-inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
-	char* temp = details::demangle(typeid(obj).name());
-	return pretty_index(temp,
-		details::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0), true);
-}
-
-template <typename T>
-inline typename std::enable_if<!std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
-	return prettyid<T>();
-}
 
 } // namespace zhukov
 
@@ -473,5 +434,8 @@ template<> struct hash<zhukov::pretty_index> {
 };
 
 } // namespace std
+
+#define prettyid(...) \
+zhukov::pretty_index(typeid(__VA_ARGS__))
 
 #endif // PRETTY_INDEX_HPP
