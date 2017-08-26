@@ -109,9 +109,12 @@ inline char * str_cut(char*& str, const char* string_to_cut) {
 	return str;
 }
 
-//Disable C4996 for strcpy, strncpy
-#if defined (_MSC_VER)
-#pragma warning(disable:4996)
+//Disable warnings for strcpy, strncpy
+#if defined (__GNUC__)
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined (_MSC_VER)
+#	pragma warning(disable:4996)
 #endif
 
 inline char * str_dup(const char * str) {
@@ -169,9 +172,11 @@ inline char* str_rep(char*& str, const char* original, const char* updated) {
 
 }
 
-//un-Disable C4996 for strcpy, strncpy
-#if defined (_MSC_VER)
-#pragma warning(default:4996)
+//un-Disable warnings for strcpy, strncpy
+#if defined (__GNUC__)
+#	pragma clang diagnostic pop
+#elif defined (_MSC_VER)
+#	pragma warning(default:4996)
 #endif
 
 inline char* demangle(const char* name) {
@@ -325,30 +330,61 @@ inline unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int s
 }
 
 template <typename T>
-class static_info {
-public:
-	static const char* name;
-	static const std::size_t hash_code;
+struct static_info {
+	static const char* name_;
+	static const std::size_t hash_code_;
 };
 template <typename T>
-const char* static_info<T>::name = demangle(typeid(T).name());
+const char* static_info<T>::name_ = demangle(typeid(T).name());
 template <typename T>
-const std::size_t static_info<T>::hash_code = MurmurHashNeutral2(static_info<T>::name, static_cast<int>(strlen(static_info<T>::name)), 0);
+const std::size_t static_info<T>::hash_code_ = MurmurHashNeutral2(demangle(typeid(T).name()), static_cast<int>(strlen(demangle(typeid(T).name()))), 0);
+
+class type_name {
+public:
+	const char* name_;
+private:
+	bool needs_freeing_;
+	std::size_t* ref_count_;
+public:
+	type_name(const char* const& name, bool needs_freeing);
+	
+	type_name(const type_name& other);
+	type_name(type_name&& other) = default;
+
+	~type_name();
+};
+
+inline type_name::type_name(const char * const & name, bool needs_freeing) :
+	name_(name),
+	needs_freeing_(needs_freeing),
+	ref_count_(needs_freeing_ ? new std::size_t(1) : nullptr)
+{}
+
+inline type_name::type_name(const type_name & other) :
+	name_(other.name_),
+	needs_freeing_(other.needs_freeing_),
+	ref_count_(needs_freeing_ ? &(++(*other.ref_count_)) : nullptr) {
+}
+
+inline type_name::~type_name() {
+	if (needs_freeing_) {
+		if (*ref_count_ == 0) {
+			std::free(const_cast<char*>(name_));
+		}
+		else {
+			(*ref_count_)--;
+		}
+	}
+}
 
 } // namespace details
 
 class pretty_index {
 private:
-	///c-string containing name
-	const char* name_;
-
-	///Tells destructor if name_ needs freeing.
-	bool needs_freeing_;
-
+	details::type_name name_;
 	std::size_t hash_code_;
 
-	///Construct from raw data
-	pretty_index(const char* const& name, const std::size_t& hash_code, bool needs_freeing);
+	pretty_index(details::type_name name, const std::size_t& hash_code);
 
 public:
 	const char* name() const;
@@ -356,31 +392,29 @@ public:
 
 	bool operator==(const pretty_index& rhs) const;
 	bool operator!=(const pretty_index& rhs) const;
+
+	bool before(const pretty_index& rhs) const;
 	bool operator< (const pretty_index& rhs) const;
 	bool operator<=(const pretty_index& rhs) const;
 	bool operator> (const pretty_index& rhs) const;
 	bool operator>=(const pretty_index& rhs) const;
 
-	pretty_index() = delete; // Default constructor (deleted)
-
-	pretty_index(const pretty_index& other); // Copy constructor
-	pretty_index(pretty_index&& other) = default; // Move constructor
-
-	pretty_index& operator=(pretty_index rhs);
-
-	~pretty_index(); // Default destructor
-
-	friend void swap(pretty_index& first, pretty_index& second);
+	pretty_index() = delete;
 
 	template <typename T>
-	friend pretty_index prettyid();
+	friend inline pretty_index prettyid();
 
 	template <typename T>
-	friend typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj);
+	friend inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj);
 };
 
+inline pretty_index::pretty_index(details::type_name name, const std::size_t & hash_code) :
+	name_(name),
+	hash_code_(hash_code) {
+}
+
 inline const char* pretty_index::name() const {
-	return name_;
+	return name_.name_;
 }
 
 inline const std::size_t pretty_index::hash_code() const {
@@ -388,15 +422,19 @@ inline const std::size_t pretty_index::hash_code() const {
 }
 
 inline bool pretty_index::operator==(const pretty_index & rhs) const {
-	return strcmp(name_, rhs.name_) == 0;
+	return hash_code_ == rhs.hash_code_;
 }
 
 inline bool pretty_index::operator!=(const pretty_index & rhs) const {
 	return !operator==(rhs);
 }
 
+inline bool pretty_index::before(const pretty_index & rhs) const {
+	return hash_code_ < rhs.hash_code_;
+}
+
 inline bool pretty_index::operator<(const pretty_index & rhs) const {
-	return strcmp(name_, rhs.name_) < 0;
+	return hash_code_ < rhs.hash_code_;
 }
 
 inline bool pretty_index::operator<=(const pretty_index & rhs) const {
@@ -411,56 +449,26 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 	return !operator<(rhs);
 }
 
-inline pretty_index::pretty_index(const char* const& name, const std::size_t& hash_code, bool needs_freeing) :
-	name_(name),
-	hash_code_(hash_code),
-	needs_freeing_(needs_freeing)
-{}
-
-inline pretty_index::pretty_index(const pretty_index & other) :
-	name_(other.needs_freeing_ ? details::str_dup(other.name_) : other.name_),
-	hash_code_(other.hash_code_),
-	needs_freeing_(other.needs_freeing_) {
-}
-
-inline pretty_index & pretty_index::operator=(pretty_index rhs) {
-	swap(*this, rhs);
-	return *this;
-}
-
-inline pretty_index::~pretty_index() {
-	if (needs_freeing_) {
-		std::free(const_cast<char*>(name_));
-	}
-}
-
-inline void swap(pretty_index& first, pretty_index& second) {
-	// enable ADL
-	using std::swap;
-
-	// by swapping the members of two objects,
-	// the two objects are effectively swapped
-	swap(first.name_, second.name_);
-	swap(first.hash_code_, second.hash_code_);
-	swap(first.needs_freeing_, second.needs_freeing_);
-}
-
 template <typename T>
 inline pretty_index prettyid() {
-	return pretty_index(details::static_info<T>::name, details::static_info<T>::hash_code, false);
-}
-
-template <typename T>
-inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
-	char* temp = details::demangle(typeid(obj).name());
-	return pretty_index(temp,
-		details::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0), true);
+	return pretty_index(details::type_name(details::static_info<T>::name_, false), details::static_info<T>::hash_code_);
 }
 
 template <typename T>
 inline typename std::enable_if<!std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
 	return prettyid<T>();
 }
+
+template <typename T>
+inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
+	auto temp = details::demangle(typeid(obj).name());
+
+	return pretty_index(
+		details::type_name(temp, true),
+		details::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0));
+}
+
+using pretty_info = pretty_index;
 
 } // namespace zhukov
 
