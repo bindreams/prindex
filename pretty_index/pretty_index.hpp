@@ -344,6 +344,9 @@ public:
 	const char* name_;
 private:
 	bool needs_freeing_;
+
+	///Class that created 
+	//std::size_t ref_count_val;
 	std::size_t* ref_count_;
 public:
 	type_name(const char* const& name, bool needs_freeing);
@@ -368,8 +371,9 @@ inline type_name::type_name(const type_name & other) :
 
 inline type_name::~type_name() {
 	if (needs_freeing_) {
-		if (*ref_count_ == 0) {
+		if (*ref_count_ == 1) {
 			std::free(const_cast<char*>(name_));
+			delete ref_count_;
 		}
 		else {
 			(*ref_count_)--;
