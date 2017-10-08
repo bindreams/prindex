@@ -345,8 +345,6 @@ public:
 private:
 	bool needs_freeing_;
 
-	///Class that created 
-	//std::size_t ref_count_val;
 	std::size_t* ref_count_;
 public:
 	type_name(const char* const& name, bool needs_freeing);
