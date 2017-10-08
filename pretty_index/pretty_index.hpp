@@ -28,7 +28,7 @@ SOFTWARE.
 
 /*!
 \brief   If set to 1, cuts non-standard inline namespaces in llvm
-\details Example of what this macro does:\n
+\detail Example of what this macro does:\n
 If macro **is** set to 1, ```prettyid(std::string).name()``` returns
 ```std::basic_string<char, std::char_traits<char>,
 std::allocator<char> >```
@@ -41,7 +41,7 @@ std::allocator<char> >```
 
 /*!
 \brief   If set to 1, unwraps typedef classes to their original types in gcc
-\details Example of what this macro does:\n
+\detail Example of what this macro does:\n
 If macro **is** set to 1, ```prettyid(std::string).name()``` returns
 ```std::basic_string<char, std::char_traits<char>,
 std::allocator<char> >```
@@ -53,7 +53,7 @@ returns ```std::string```
 
 /*!
 \brief   If set to 1, removes spaces between angle brackets ```<>```
-\details Example of what this macro does:\n
+\detail Example of what this macro does:\n
 If macro **is** set to 1, ```prettyid(std::string).name()``` returns
 ```std::basic_string<char, std::char_traits<char>,
 std::allocator<char>>```
@@ -89,7 +89,7 @@ std::allocator<char> >```
 namespace zhukov {
 
 ///Namespace for internal-use-only functions
-namespace details {
+namespace detail {
 
 inline char * str_shrink_to_fit(char*& str) {
 	str = static_cast<char*>(realloc(str, strlen(str) + 1));
@@ -281,7 +281,7 @@ inline char* demangle(const char* name) {
 
 /*!
 \brief   MurmurHashNeutral2, by Austin Appleby
-\details Produces a hash of a byte array. Same as MurmurHash2, but endian- and alignment-neutral.
+\detail Produces a hash of a byte array. Same as MurmurHash2, but endian- and alignment-neutral.
 Site: https://sites.google.com/site/murmurhash/
 \param   key Pointer to an array of bytes
 \param   len Length of the array
@@ -379,14 +379,14 @@ inline type_name::~type_name() {
 	}
 }
 
-} // namespace details
+} // namespace detail
 
 class pretty_index {
 private:
-	details::type_name name_;
+	detail::type_name name_;
 	std::size_t hash_code_;
 
-	pretty_index(details::type_name name, const std::size_t& hash_code);
+	pretty_index(detail::type_name name, const std::size_t& hash_code);
 
 public:
 	const char* name() const;
@@ -411,7 +411,7 @@ public:
 	friend inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj);
 };
 
-inline pretty_index::pretty_index(details::type_name name, const std::size_t & hash_code) :
+inline pretty_index::pretty_index(detail::type_name name, const std::size_t & hash_code) :
 	name_(name),
 	hash_code_(hash_code) {
 }
@@ -454,14 +454,14 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 
 inline pretty_index::pretty_index(const std::type_info & info) 
 	: pretty_index(
-		details::type_name(details::demangle(info.name()), true),
-		details::MurmurHashNeutral2(details::demangle(info.name()),
-			static_cast<int>(strlen(details::demangle(info.name()))), 0)) {
+		detail::type_name(detail::demangle(info.name()), true),
+		detail::MurmurHashNeutral2(detail::demangle(info.name()),
+			static_cast<int>(strlen(detail::demangle(info.name()))), 0)) {
 }
 
 template <typename T>
 inline pretty_index prettyid() {
-	return pretty_index(details::type_name(details::static_info<T>::name_, false), details::static_info<T>::hash_code_);
+	return pretty_index(detail::type_name(detail::static_info<T>::name_, false), detail::static_info<T>::hash_code_);
 }
 
 template <typename T>
@@ -471,11 +471,11 @@ inline typename std::enable_if<!std::is_polymorphic<T>::value, pretty_index>::ty
 
 template <typename T>
 inline typename std::enable_if<std::is_polymorphic<T>::value, pretty_index>::type prettyid(const T& obj) {
-	auto temp = details::demangle(typeid(obj).name());
+	auto temp = detail::demangle(typeid(obj).name());
 
 	return pretty_index(
-		details::type_name(temp, true),
-		details::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0));
+		detail::type_name(temp, true),
+		detail::MurmurHashNeutral2(temp, static_cast<int>(strlen(temp)), 0));
 }
 
 using pretty_info = pretty_index;
