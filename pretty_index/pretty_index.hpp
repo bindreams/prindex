@@ -135,7 +135,7 @@ inline char* str_rep(char*& str, const char* original, const char* updated) {
 	auto diff = static_cast<long int>(updated_len - original_len);
 
 	//Calculate required memory
-	for (char* it = strstr(str, original); it != nullptr; it = strstr(++it, original)) 
+	for (char* it = strstr(str, original); it != nullptr; it = strstr(++it, original))
 		mem_needed += diff;
 
 	char* it;
@@ -268,9 +268,9 @@ inline char* demangle(const char* name) {
 	if (!str_rep(str, " >", ">")) throw std::bad_alloc();
 
 	/*for (char* it = strchr(str, '>'); it != nullptr; it = strchr(++it, '>')) {
-		if (*(it - 1) == ' ') {
-			memmove(it - 1, it, strlen(it) + 1);
-		}
+	if (*(it - 1) == ' ') {
+	memmove(it - 1, it, strlen(it) + 1);
+	}
 	}*/
 
 	#endif // PRETTY_INDEX_GROUP_ANGLE_BRACKETS == 1
@@ -347,24 +347,43 @@ private:
 
 	std::size_t* ref_count_;
 public:
+	type_name();
 	type_name(const char* const& name, bool needs_freeing);
-	
+
 	type_name(const type_name& other);
-	type_name(type_name&& other) = default;
+	type_name(type_name&& other);
+
+	type_name& operator=(type_name other);
 
 	~type_name();
+
+	friend inline void swap(type_name& first, type_name& second);
 };
+
+inline type_name::type_name() :
+	needs_freeing_(false) {
+}
 
 inline type_name::type_name(const char * const & name, bool needs_freeing) :
 	name_(name),
 	needs_freeing_(needs_freeing),
-	ref_count_(needs_freeing_ ? new std::size_t(1) : nullptr)
-{}
+	ref_count_(needs_freeing_ ? new std::size_t(1) : nullptr) {
+}
 
 inline type_name::type_name(const type_name & other) :
 	name_(other.name_),
 	needs_freeing_(other.needs_freeing_),
 	ref_count_(needs_freeing_ ? &(++(*other.ref_count_)) : nullptr) {
+}
+
+inline type_name::type_name(type_name && other)
+	: type_name() {
+	swap(*this, other);
+}
+
+inline type_name & type_name::operator=(type_name other) {
+	swap(*this, other);
+	return *this;
 }
 
 inline type_name::~type_name() {
@@ -377,6 +396,17 @@ inline type_name::~type_name() {
 			(*ref_count_)--;
 		}
 	}
+}
+
+inline void swap(type_name& first, type_name& second) {
+	// enable ADL
+	using std::swap;
+
+	// by swapping the members of two objects,
+	// the two objects are effectively swapped
+	swap(first.name_, second.name_);
+	swap(first.needs_freeing_, second.needs_freeing_);
+	swap(first.ref_count_, second.ref_count_);
 }
 
 } // namespace detail
@@ -452,7 +482,7 @@ inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 	return !operator<(rhs);
 }
 
-inline pretty_index::pretty_index(const std::type_info & info) 
+inline pretty_index::pretty_index(const std::type_info & info)
 	: pretty_index(
 		detail::type_name(detail::demangle(info.name()), true),
 		detail::MurmurHashNeutral2(detail::demangle(info.name()),
