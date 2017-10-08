@@ -402,6 +402,7 @@ public:
 	bool operator>=(const pretty_index& rhs) const;
 
 	pretty_index() = delete;
+	pretty_index(const std::type_info& info);
 
 	template <typename T>
 	friend inline pretty_index prettyid();
@@ -449,6 +450,13 @@ inline bool pretty_index::operator>(const pretty_index & rhs) const {
 
 inline bool pretty_index::operator>=(const pretty_index & rhs) const {
 	return !operator<(rhs);
+}
+
+inline pretty_index::pretty_index(const std::type_info & info) 
+	: pretty_index(
+		details::type_name(details::demangle(info.name()), true),
+		details::MurmurHashNeutral2(details::demangle(info.name()),
+			static_cast<int>(strlen(details::demangle(info.name()))), 0)) {
 }
 
 template <typename T>
