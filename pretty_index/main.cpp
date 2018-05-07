@@ -1,12 +1,8 @@
-#include "tests.hpp"
 #include <iostream>
-#include "pretty_index.hpp"
-using namespace zhukov;
+#include <map>
+#include "prid.hpp"
 
 int main() {
-	//std::cout << prettyid<std::string>().name() << std::endl;
-	//std::cout << pretty_index(typeid(std::string)).name() << std::endl;
-
-	test_all();
-	//getchar();
+	std::cout << "prid(std::string).name() =" << std::endl << prid<std::string>().name() << std::endl << std::endl;
+	std::cout << "prid(std::map<std::string, nm::A>).name() =" << std::endl << prid<std::map<std::string, double>>().name() << std::endl;
 }
