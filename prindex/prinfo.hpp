@@ -16,8 +16,8 @@ public:
 	prinfo(const prinfo& other) = delete;
 	prinfo(prinfo&& other) = default;
 
-	prinfo& prinfo::operator=(const prinfo& rhs) = delete;
-	prinfo& prinfo::operator=(prinfo&& rhs) = default;
+	prinfo& operator=(const prinfo& rhs) = delete;
+	prinfo& operator=(prinfo&& rhs) = default;
 
 	virtual ~prinfo() = default;
 
