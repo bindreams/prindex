@@ -5,20 +5,20 @@
 
 template <typename T>
 inline const prinfo& prid() {
-	return get_prinfo(typeid(T));
+	return detail::get_prinfo(typeid(T));
 }
 
 template <typename T>
 inline const prinfo& prid(T&& obj) {
-	return get_prinfo(typeid(std::forward<T>(obj)));
+	return detail::get_prinfo(typeid(std::forward<T>(obj)));
 }
 
 template <typename T>
 inline prindex pridx() {
-	return prindex(get_prinfo(typeid(T)));
+	return prindex(detail::get_prinfo(typeid(T)));
 }
 
 template <typename T>
 inline prindex pridx(T&& obj) {
-	return prindex(get_prinfo(typeid(std::forward<T>(obj))));
+	return prindex(detail::get_prinfo(typeid(std::forward<T>(obj))));
 }

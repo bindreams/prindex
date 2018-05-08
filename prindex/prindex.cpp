@@ -34,7 +34,7 @@ bool prindex::operator>=(const prindex & rhs) const noexcept {
 }
 
 prindex::prindex(const std::type_info & info) :
-	m_info(&get_prinfo(std::type_index(info))) {
+	m_info(&detail::get_prinfo(std::type_index(info))) {
 }
 
 prindex::prindex(const prinfo & info) :

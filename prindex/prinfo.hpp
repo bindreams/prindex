@@ -3,6 +3,12 @@
 #include <cstddef> // size_t
 #include <typeindex> // type_index
 
+class prinfo;
+
+namespace detail {
+inline const prinfo& get_prinfo(const std::type_index& index);
+}
+
 class prinfo {
 private:
 	std::string m_name;
@@ -31,5 +37,5 @@ public:
 	bool before(const prinfo& other) const;
 
 	// Friends
-	friend inline const prinfo& get_prinfo(const std::type_index& index);
+	friend inline const prinfo& detail::get_prinfo(const std::type_index& index);
 };

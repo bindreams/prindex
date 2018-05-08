@@ -1,11 +1,10 @@
 #pragma once
-#include <unordered_map>
-#include <typeindex>
+#include <unordered_map> // unordered_map
+#include <typeindex> // type_index
 #include "prinfo.hpp"
 
-namespace {
-std::unordered_map<std::type_index, prinfo> types;
-}
+namespace detail {
+static std::unordered_map<std::type_index, prinfo> types;
 
 inline const prinfo& get_prinfo(const std::type_index& index) {
 	auto got = types.find(index);
@@ -16,3 +15,5 @@ inline const prinfo& get_prinfo(const std::type_index& index) {
 
 	return got->second;
 }
+
+} // namespace detail

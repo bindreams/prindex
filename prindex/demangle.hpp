@@ -2,7 +2,7 @@
 #include <cstring> // strlen
 #include <string> // string
 
-#include <ciso646>
+#include <ciso646> // lib check macro
 #ifdef _LIBCPP_VERSION
 #	include <cxxabi.h> // abi::__cxa_demangle
 #   include <cstdlib> // free
