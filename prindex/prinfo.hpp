@@ -31,7 +31,5 @@ public:
 	bool before(const prinfo& other) const;
 
 	// Friends
-	friend class prindex;
-
 	friend inline const prinfo& get_prinfo(const std::type_index& index);
 };

@@ -10,7 +10,7 @@ std::size_t prindex::hash_code() const {
 }
 
 bool prindex::operator==(const prindex & rhs) const noexcept {
-	return m_info->m_name == rhs.m_info->m_name;
+	return *m_info == *rhs.m_info;
 }
 
 bool prindex::operator!=(const prindex & rhs) const noexcept {
@@ -18,7 +18,7 @@ bool prindex::operator!=(const prindex & rhs) const noexcept {
 }
 
 bool prindex::operator<(const prindex & rhs) const noexcept {
-	return m_info->m_name < rhs.m_info->m_name;
+	return m_info->before(*rhs.m_info);
 }
 
 bool prindex::operator<=(const prindex & rhs) const noexcept {
