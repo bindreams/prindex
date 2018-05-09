@@ -20,7 +20,7 @@ inline const prinfo& prid() {
 
 template <typename T>
 inline const prinfo& prid(T&& obj) {
-	return detail::get_prinfo(typeid(std::forward<T>(obj)));
+	return detail::get_prinfo(typeid(std::forward(obj)));
 }
 
 template <typename T>
@@ -30,7 +30,7 @@ inline prindex pridx() {
 
 template <typename T>
 inline prindex pridx(T&& obj) {
-	return prindex(detail::get_prinfo(typeid(std::forward<T>(obj))));
+	return prindex(detail::get_prinfo(typeid(std::forward(obj))));
 }
 
 #endif // PRINDEX_NO_MACROS

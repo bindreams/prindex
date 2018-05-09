@@ -122,8 +122,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="prindex.cpp" />
-    <ClCompile Include="prinfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="demangle.hpp" />
