@@ -48,18 +48,18 @@ The `prindex` class is a wrapper class around a `prinfo` object, that can be use
 constructs the object  
 * (destructor)  
 destroys the type_index object
-* operator=  
+* `operator=`  
 assigns a type_index object
-* operator==
-* operator!=
-* operator<
-* operator<=
-* operator>
-* operator>=  
+* `operator==`
+* `operator!=`
+* `operator<`
+* `operator<=`
+* `operator>`
+* `operator>=`  
 compares the underlying `prinfo` objects
-* hash_code  
+* `hash_code`  
 returns hashed code 
-* name  
+* `name`  
 returns implementation-independent name of the type,
 associated with underlying `prinfo` object 
 
