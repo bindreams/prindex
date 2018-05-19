@@ -13,22 +13,22 @@ prindex(detail::get_prinfo(typeid(__VA_ARGS__)))
 
 #else
 
-template <typename T>
+template <class T>
 inline const prinfo& prid() {
 	return detail::get_prinfo(typeid(T));
 }
 
-template <typename T>
+template <class T>
 inline const prinfo& prid(T&& obj) {
 	return detail::get_prinfo(typeid(std::forward(obj)));
 }
 
-template <typename T>
+template <class T>
 inline prindex pridx() {
 	return prindex(detail::get_prinfo(typeid(T)));
 }
 
-template <typename T>
+template <class T>
 inline prindex pridx(T&& obj) {
 	return prindex(detail::get_prinfo(typeid(std::forward(obj))));
 }

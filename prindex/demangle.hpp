@@ -12,9 +12,9 @@
 #   include <cstdlib> // free
 //	Using GNU libstdc++
 #elif _CPPLIB_VER // Note: used by Visual Studio
-
+// Using MSVC std
 #else
-#	error prindex: unsupported standard library detected. Supported libraries are: LLVM libc++, GNU libstdc++, Dinkumware STL
+#	error prindex: unsupported standard library detected. Supported libraries are: LLVM libc++, GNU libstdc++, MSVC std
 #endif
 
 inline std::string demangle(const char* name) {
