@@ -33,4 +33,4 @@ inline prindex pridx(T&& obj) {
 	return prindex(detail::get_prinfo(typeid(std::forward(obj))));
 }
 
-#endif // PRINDEX_NO_MACROS
+#endif // PRINDEX_WANT_MACROS
