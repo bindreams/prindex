@@ -58,7 +58,9 @@ inline std::size_t prinfo::hash_code() const {
 }
 
 inline bool prinfo::operator==(const prinfo & rhs) const {
-	return m_name == rhs.m_name;
+	// The only strong equality is equality of names
+	// But if hashes are different, so are names
+	return m_hash_code == rhs.m_hash_code && m_name == rhs.m_name;
 }
 
 inline bool prinfo::operator!=(const prinfo & rhs) const {
