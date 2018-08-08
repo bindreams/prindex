@@ -61,8 +61,11 @@ inline std::string demangle(const char* name) {
 
 	cut("class ");
 	cut("struct ");
+
 	replace(" ,", ",");
 	replace(",", ", ");
+
+	replace(" *", "*");
 
 #elif defined(_LIBCPP_VERSION)
 
