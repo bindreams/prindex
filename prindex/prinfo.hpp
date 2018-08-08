@@ -5,6 +5,8 @@
 #include "demangle.hpp"
 #include "hash.hpp"
 
+namespace zh {
+
 class prinfo;
 
 namespace detail {
@@ -45,8 +47,8 @@ public:
 // Definitions =================================================================
 
 inline prinfo::prinfo(const std::type_index & index) :
-	m_name(demangle(index.name())),
-	m_hash_code(hash(m_name)) {
+	m_name(detail::demangle(index.name())),
+	m_hash_code(detail::hash(m_name)) {
 }
 
 inline const char* prinfo::name() const {
@@ -58,9 +60,12 @@ inline std::size_t prinfo::hash_code() const {
 }
 
 inline bool prinfo::operator==(const prinfo & rhs) const {
-	// The only strong equality is equality of names
-	// But if hashes are different, so are names
-	return m_hash_code == rhs.m_hash_code && m_name == rhs.m_name;
+	// A user is not supposed to create instances of prinfo.
+	// Prinfo instances only exist in a map, mapped to a type_index.
+	// (see zh::detail::get_prinfo for details)
+	// That means that no two prinfo's representing the same type exist,
+	// so an instance of prinfo is only equal to itself.
+	return (this == &rhs);
 }
 
 inline bool prinfo::operator!=(const prinfo & rhs) const {
@@ -70,3 +75,5 @@ inline bool prinfo::operator!=(const prinfo & rhs) const {
 inline bool prinfo::before(const prinfo & other) const {
 	return m_hash_code < other.m_hash_code;
 }
+
+} // namespace zh

@@ -2,6 +2,8 @@
 #include "prinfo.hpp"
 #include "get_prinfo.hpp"
 
+namespace zh {
+
 class prindex {
 private:
 	const prinfo* m_info;
@@ -32,10 +34,12 @@ public:
 	bool operator>=(const prindex& rhs) const noexcept;
 };
 
+} // namespace zh
+
 namespace std {
 
-template<> struct hash<prindex> {
-	std::size_t operator()(const prindex& obj) const {
+template<> struct hash<zh::prindex> {
+	std::size_t operator()(const zh::prindex& obj) const {
 		return obj.hash_code();
 	}
 };
@@ -43,6 +47,8 @@ template<> struct hash<prindex> {
 } // namespace std
 
 // Definitions =================================================================
+
+namespace zh {
 
 inline const char* prindex::name() const {
 	return m_info->name();
@@ -83,3 +89,5 @@ inline prindex::prindex(const std::type_info & info) :
 inline prindex::prindex(const prinfo & info) :
 	m_info(&info) {
 }
+
+} // namespace zh

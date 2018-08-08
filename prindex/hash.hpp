@@ -2,14 +2,17 @@
 #include <string> // string
 #include <cstddef> // size_t
 
+namespace zh {
+namespace detail {
+
 /*!
 \brief   MurmurHashNeutral2, by Austin Appleby
-\detail  Produces a hash of a byte array. Same as MurmurHash2, but endian- and alignment-neutral.
-         Site: https://sites.google.com/site/murmurhash/
+Produces a hash of a byte array. Same as MurmurHash2, but endian- and alignment-neutral.
+Site: https://sites.google.com/site/murmurhash/
 \param   key Pointer to an array of bytes
 \param   len Length of the array
 \param   seed Seed for hashing algorithm
-\see     pretty_index::hash_code
+\see     prinfo::hash_code
 */
 inline unsigned int MurmurHashNeutral2(const void * key, int len, unsigned int seed) {
 	const unsigned int m = 0x5bd1e995;
@@ -58,3 +61,6 @@ inline std::size_t hash(const std::string& str) {
 		static_cast<int>(str.size()),
 		0));
 }
+
+} // namespace detail
+} // namespace zh

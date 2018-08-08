@@ -17,6 +17,9 @@
 #	error prindex: unsupported standard library detected. Supported libraries are: LLVM libc++, GNU libstdc++, MSVC std
 #endif
 
+namespace zh {
+namespace detail {
+
 inline std::string demangle(const char* name) {
 	std::string str(name);
 
@@ -89,3 +92,6 @@ inline std::string demangle(const char* name) {
 
 	return str;
 }
+
+} // namespace detail
+} // namespace zh

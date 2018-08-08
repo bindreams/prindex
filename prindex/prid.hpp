@@ -3,15 +3,7 @@
 #include "prinfo.hpp"
 #include "prindex.hpp"
 
-#ifdef PRINDEX_WANT_MACROS
-
-#define prid(...) \
-detail::get_prinfo(typeid(__VA_ARGS__))
-
-#define pridx(...) \
-prindex(detail::get_prinfo(typeid(__VA_ARGS__)))
-
-#else
+namespace zh {
 
 template <class T>
 inline const prinfo& prid() {
@@ -20,7 +12,7 @@ inline const prinfo& prid() {
 
 template <class T>
 inline const prinfo& prid(T&& obj) {
-	return detail::get_prinfo(typeid(std::forward(obj)));
+	return detail::get_prinfo(typeid(std::forward<T>(obj)));
 }
 
 template <class T>
@@ -30,7 +22,13 @@ inline prindex pridx() {
 
 template <class T>
 inline prindex pridx(T&& obj) {
-	return prindex(detail::get_prinfo(typeid(std::forward(obj))));
+	return prindex(detail::get_prinfo(typeid(std::forward<T>(obj))));
 }
 
-#endif // PRINDEX_WANT_MACROS
+} // namespace zh
+
+#define PRID(...) \
+zh::detail::get_prinfo(typeid(__VA_ARGS__))
+
+#define PRIDX(...) \
+zh::prindex(zh::detail::get_prinfo(typeid(__VA_ARGS__)))

@@ -3,7 +3,9 @@
 #include <typeindex> // type_index
 #include "prinfo.hpp"
 
+namespace zh {
 namespace detail {
+
 static std::unordered_map<std::type_index, prinfo> types;
 
 inline const prinfo& get_prinfo(const std::type_index& index) {
@@ -17,3 +19,4 @@ inline const prinfo& get_prinfo(const std::type_index& index) {
 }
 
 } // namespace detail
+} // namespace zh

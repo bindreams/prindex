@@ -1,8 +1,8 @@
 #include <iostream>
 #include <map>
-#define PRINDEX_WANT_MACROS
 #include "prid.hpp"
-#undef PRINDEX_WANT_MACROS
+
+using zh::prid;
 
 namespace name_space {
 class MyClass {};
