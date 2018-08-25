@@ -10,15 +10,16 @@ Prindex was designed to be as similar in usage as `type_info` and `type_index`. 
 
 | C++ Standard                                    | prindex                                         |
 | ----------------------------------------------- | ----------------------------------------------- |
-| `typeid(type)`                                  | `prid<type>() or PRID(type)`                    |
-| `typeid(expr)`                                  | `prid(expr) or PRID(expr)`                      |
-| `const type_info& ti = typeid(...)`             | `const prinfo& ti = PRID(...)`                  |
-| `type_index(typeid(...))`                       | `prindex(prid(...))` or `PRIDX(...)`            |
+| `typeid(type)`                                  | `zh::prid<type>() or PRID(type)`                |
+| `typeid(expr)`                                  | `zh::prid(expr) or PRID(expr)`                  |
+| `const std::type_info& ti = typeid(...)`        | `const zh::prinfo& ti = PRID(...)`              |
+| `std::type_index(typeid(...))`                  | `zh::prindex(zh::prid(...))` or `PRIDX(...)`    |
 
-If you would like to take advantage of the *true keyword experience*, prindex includes helpful macros, so you can use `PRID(type)` instead of `prid<type>()` (same for `pridx`).
+If you would like to take advantage of the *true keyword experience*, prindex includes helpful macros, so you can use `PRID(type)` instead of `zh::prid<type>()` (same for `pridx`).
 
 All interfaces of included classes are identical to the corresponding ones in the C++ Standard.
 ## Documentation
+All classes and functions described are in `namespace zh`.
 ### `class prinfo`
 The class `prinfo` holds implementation-independent information about a type, including the name of the type and means to compare two types for equality or collating order. This is the class returned by the `prid` operator.
 
@@ -74,7 +75,8 @@ inline const prinfo& prid();
 
 template <class T>
 inline const prinfo& prid(T&& obj);
-
+```
+```C++
 #define PRID(...) \
 zh::detail::get_prinfo(typeid(__VA_ARGS__))
 ```
@@ -87,7 +89,8 @@ inline prindex pridx();
 
 template <class T>
 inline prindex pridx(T&& obj);
-
+```
+```C++
 #define PRIDX(...) \
 zh::prindex(zh::detail::get_prinfo(typeid(__VA_ARGS__)))
 ```
