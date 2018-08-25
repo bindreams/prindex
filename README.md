@@ -10,12 +10,12 @@ Prindex was designed to be as similar in usage as `type_info` and `type_index`. 
 
 | C++ Standard                                    | prindex                                         |
 | ----------------------------------------------- | ----------------------------------------------- |
-| `typeid(type)`                                  | `prid<type>()`                                  |
-| `typeid(expr)`                                  | `prid(expr)`                                    |
-| `const type_info& ti = typeid(...)`             | `const prinfo& ti = prid(...)`                  |
-| `type_index(typeid(...))`                       | `prindex(prid(...))` or `pridx(...)`            |
+| `typeid(type)`                                  | `prid<type>() or PRID(type)`                    |
+| `typeid(expr)`                                  | `prid(expr) or PRID(expr)`                      |
+| `const type_info& ti = typeid(...)`             | `const prinfo& ti = PRID(...)`                  |
+| `type_index(typeid(...))`                       | `prindex(prid(...))` or `PRIDX(...)`            |
 
-If you would like to take advantage of the *true keyword experience* you can define `PRINDEX_WANT_MACROS` before including the header and use `prid(type)` instead of `prid<type>()` (same for `pridx`). Please note that macros do not respect namespaces.
+If you would like to take advantage of the *true keyword experience*, prindex includes helpful macros, so you can use `PRID(type)` instead of `prid<type>()` (same for `pridx`).
 
 All interfaces of included classes are identical to the corresponding ones in the C++ Standard.
 ## Documentation
@@ -47,9 +47,9 @@ The `prindex` class is a wrapper class around a `prinfo` object, that can be use
 * (constructor)  
 constructs the object  
 * (destructor)  
-destroys the type_index object
+destroys the prindex object
 * `operator=`  
-assigns a type_index object
+assigns a prindex object
 * `operator==`
 * `operator!=`
 * `operator<`
@@ -74,8 +74,11 @@ inline const prinfo& prid();
 
 template <class T>
 inline const prinfo& prid(T&& obj);
+
+#define PRID(...) \
+zh::detail::get_prinfo(typeid(__VA_ARGS__))
 ```
-The `prid` function returns a const reference to a `prid` object, holding implementation-independent information about a type or expression passed into it. If a macro `PRINDEX_WANT_MACROS` was defined before including the header, then `prid` is a macro that does the same thing.
+The `prid` function returns a const reference to a `prid` object, holding implementation-independent information about a type or expression passed into it. `PRID` is a macro that does the same thing.
 
 ### Function/macro `pridx`
 ```C++
@@ -84,8 +87,11 @@ inline prindex pridx();
 
 template <class T>
 inline prindex pridx(T&& obj);
+
+#define PRIDX(...) \
+zh::prindex(zh::detail::get_prinfo(typeid(__VA_ARGS__)))
 ```
-The `pridx` function returns a `prindex` object, holding implementation-independent information about a type or expression passed into it as . If a macro `PRINDEX_WANT_MACROS` was defined before including the header, then `pridx` is a macro that does the same thing.
+The `pridx` function returns a `prindex` object, holding implementation-independent information about a type or expression passed into it. `PRIDX` is a macro that does the same thing.
 
 ## License
 This project is licenced under the MIT licence. It is free for personal and commercial use.
